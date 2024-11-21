@@ -4,9 +4,19 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, request, render_template, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
+import logging
+
+# ログ設定
+logging.basicConfig(level=logging.DEBUG)
 
 # Flaskアプリケーションの作成
 app = Flask(__name__)
+
+# エラーハンドラーの定義
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logging.error(f"An error occurred: {e}")
+    return "Internal Server Error occurred. Please contact support.", 500
 
 # Vercel環境用の一時保存ディレクトリ（/tmp）
 UPLOAD_FOLDER = "/tmp/uploads"
@@ -17,7 +27,6 @@ app.config["OUTPUT_FOLDER"] = OUTPUT_FOLDER
 # 必要なフォルダを作成（Vercelでは必須ではないが、エラー防止のため）
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-
 
 # URLから価格と在庫を取得する関数
 def fetch_price_and_stock(url, column):
@@ -62,9 +71,8 @@ def fetch_price_and_stock(url, column):
         return price, stock
 
     except Exception as e:
-        print(f"Error fetching data from URL {url}: {e}")
+        logging.error(f"Error fetching data from URL {url} (Column: {column}): {e}")
         return None, None
-
 
 # メインページ
 @app.route("/", methods=["GET", "POST"])
@@ -79,6 +87,10 @@ def index():
         if file.filename == "":
             return "ファイルが選択されていません。", 400
 
+        # ファイル形式のチェック
+        if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+            return "サポートされていないファイル形式です。Excelファイルをアップロードしてください。", 400
+
         if file:
             # ファイルを保存
             filename = secure_filename(file.filename)
@@ -90,7 +102,6 @@ def index():
             return redirect(url_for("download", filename=os.path.basename(output_path)))
 
     return render_template("index.html")
-
 
 # Excelファイルを処理する関数
 def process_excel(input_path):
@@ -137,13 +148,11 @@ def process_excel(input_path):
     df.to_excel(output_path, index=False, engine="openpyxl")
     return output_path
 
-
 # ダウンロードページ
 @app.route("/download/<filename>")
 def download(filename):
     file_path = os.path.join(app.config["OUTPUT_FOLDER"], filename)
     return send_file(file_path, as_attachment=True)
-
 
 # アプリケーションの起動
 if __name__ == "__main__":
