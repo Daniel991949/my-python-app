@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from flask import Flask, request, render_template, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 import logging
+import traceback
 
 # ログ設定
 logging.basicConfig(level=logging.DEBUG)
@@ -15,8 +16,9 @@ app = Flask(__name__)
 # エラーハンドラーの定義
 @app.errorhandler(Exception)
 def handle_exception(e):
-    logging.error(f"An error occurred: {e}")
-    return "Internal Server Error occurred. Please contact support.", 500
+    error_details = traceback.format_exc()  # エラー詳細を取得
+    app.logger.error(f"An error occurred: {error_details}")  # ログに出力
+    return f"Internal Server Error occurred: {str(e)}", 500
 
 # Vercel環境用の一時保存ディレクトリ（/tmp）
 UPLOAD_FOLDER = "/tmp/uploads"
