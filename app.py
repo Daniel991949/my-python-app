@@ -8,13 +8,13 @@ from werkzeug.utils import secure_filename
 # Flaskアプリケーションの作成
 app = Flask(__name__)
 
-# アップロードされたファイルの保存先
-UPLOAD_FOLDER = "uploads"
-OUTPUT_FOLDER = "outputs"
+# Vercel環境用の一時保存ディレクトリ（/tmp）
+UPLOAD_FOLDER = "/tmp/uploads"
+OUTPUT_FOLDER = "/tmp/outputs"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["OUTPUT_FOLDER"] = OUTPUT_FOLDER
 
-# 必要なフォルダを作成
+# 必要なフォルダを作成（Vercelでは必須ではないが、エラー防止のため）
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
