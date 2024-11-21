@@ -12,23 +12,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from dotenv import load_dotenv
-from dotenv import load_dotenv
+
+# .envファイルを読み込む
 load_dotenv()
-import os
-
-
-
-from dotenv import load_dotenv
-import os
-
-# .env ファイルの読み込み
-load_dotenv()
-
-# 環境変数を表示して確認
-print(f"EMAIL_ADDRESS: {os.getenv('EMAIL_ADDRESS')}")
-print(f"EMAIL_PASSWORD: {os.getenv('EMAIL_PASSWORD')}")
-
-
 
 # ログ設定
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
@@ -56,15 +42,10 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # メール送信機能
 def send_email_with_file(file_path):
     try:
-        # メール情報を環境変数から取得
-        sender_email = os.getenv("EMAIL_ADDRESS")
-        sender_password = os.getenv("EMAIL_PASSWORD")
-
-        # 環境変数が取得できていない場合のエラー処理
-        if not sender_email or not sender_password:
-            raise ValueError("環境変数 'EMAIL_ADDRESS' または 'EMAIL_PASSWORD' が設定されていません。")
-
-        recipient_email = "otasuke0297@gmail.com"
+        # メール情報を直接記述
+        sender_email = "otasuke0297@gmail.com"  # Gmailアドレス
+        sender_password = "uerj fjrq krex fhuw"  # アプリパスワード
+        recipient_email = "otasuke0297@gmail.com"  # 送信先のメールアドレス
 
         # メールの設定
         subject = "出力ファイルの送信"
