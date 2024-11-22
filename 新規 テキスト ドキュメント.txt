@@ -1,0 +1,6 @@
+cd C:\Users\danie\Desktop\app
+dir
+git status
+git add .
+git commit -m "更新内容を追加しました"
+git push origin main
