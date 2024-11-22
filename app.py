@@ -13,21 +13,11 @@ from email.mime.base import MIMEBase
 from email import encoders
 from dotenv import load_dotenv
 
-# .envファイルを読み込む
-load_dotenv()
-
 # ログ設定
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 # Flaskアプリケーションの作成
 app = Flask(__name__)
-
-# エラーハンドラーの定義
-@app.errorhandler(Exception)
-def handle_exception(e):
-    error_details = traceback.format_exc()  # エラー詳細を取得
-    app.logger.error(f"An error occurred: {error_details}")  # ログに出力
-    return "Internal Server Error occurred. Please contact support.", 500
 
 # Vercel環境用の一時保存ディレクトリ（/tmp）
 UPLOAD_FOLDER = "/tmp/uploads"
@@ -104,9 +94,22 @@ def fetch_price_and_stock(url, column):
             stock = int("".join(filter(str.isdigit, stock_text))) if "在庫数" in stock_text else 0 if "×" in stock_text else None
 
         return price, stock
+    except requests.exceptions.Timeout:
+        logging.error(f"Timeout error for URL {url} (Column: {column})")
+        return None, None
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request error for URL {url} (Column: {column}): {e}")
+        return None, None
     except Exception as e:
         logging.error(f"Error fetching data from URL {url} (Column: {column}): {e}")
         return None, None
+
+# エラーハンドラーの定義
+@app.errorhandler(Exception)
+def handle_exception(e):
+    error_details = traceback.format_exc()  # エラー詳細を取得
+    app.logger.error(f"An error occurred: {error_details}")  # ログに出力
+    return "Internal Server Error occurred. Please contact support.", 500
 
 # メインページ
 @app.route("/", methods=["GET", "POST"])
